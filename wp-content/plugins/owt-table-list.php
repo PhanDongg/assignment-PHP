@@ -13,7 +13,9 @@ class OWTTableList extends WP_List_Table {
         $orderby = isset($_GET['orderby']) ? trim($_GET['orderby']) : "";
         $order = isset($_GET['order']) ? trim($_GET['order']) : "";
 
-        $datas = $this->wp_list_table_data($orderby, $order);
+        $search_term = isset($_POST['s']) ? trim($_POST['s']) : "";
+
+        $datas = $this->wp_list_table_data($orderby, $order, $search_term);
 
         //phân trang
         $per_page = 10;
@@ -25,7 +27,7 @@ class OWTTableList extends WP_List_Table {
             "per_page" => $per_page
         ));
         $this->items = array_slice($datas, (($current_page - 1) * $per_page), $per_page);
-
+//        $this->items = $this->wp_list_table_data($orderby, $order, $search_term);
         //1-1 => 0 * 3 = 0 , 1 , 2
         //-1 => 1*3 = 3, 4, 5
 
@@ -36,29 +38,54 @@ class OWTTableList extends WP_List_Table {
         $sortable = $this->get_sortable_columns();
 
 //        $this->_column_headers = array($columns);
+//        
         //an di cot
         $this->_column_headers = array($columns, $hidden, $sortable);
     }
 
-    public function wp_list_table_data($orderby = '', $order = '') {
+    public function wp_list_table_data($orderby = '', $order = '', $search_term = '') {
 
         global $wpdb;
-        if ($orderby == "title" && $order == "desc") {
 
+        if (!empty($search_term)) {
+
+            //wp_post
             $all_posts = $wpdb->get_results(
-                    "SELECT * from" . $wpdb->posts . " WHERE post_type = 'post' AND post_status = 'publish' ORDER BY post_title DESC"
+                    " SELECT * from " . $wpdb->posts . " WHERE post__type = 'post' AND post_status = 'publish' AND (post_title LIKE '%$search_term%' OR post_content LIKE'%$search_term%')"
             );
         } else {
-            $all_posts = $wpdb->get_results(
-                    "SELECT *from " . $wpdb->posts . " WHERE post_type = 'post' AND post_status = 'publish' ORDER BY id desc"
-            );
-//            $all_posts = get_posts(array(
-//                "post_type" => "post",
-//                "post_status" => "publish"
-//            ));
+            if ($orderby == "title" && $order == "desc") {
+                //wp_post
+                $all_posts = $wpdb->get_results(
+                        " SELECT * from " . $wpdb->posts . " WHERE post_type = 'post' AND post_status = 'publish' ORDER BY post_title DESC"
+                );
+            } else {
+//                $all_posts = $wpdb->get_results(
+//                        " SELECT *from " . $wpdb->posts . " WHERE post_type = 'post' AND post_status = 'publish' ORDER BY id desc"
+//                );
+                $all_posts = get_posts(array(
+                    "post_type" => "post",
+                    "post_status" => "publish"
+                ));
+            }
         }
 
-//        print_r($all_posts);
+//        if ($orderby == "title" && $order == "desc") {
+//            //wp_post
+//            $all_posts = $wpdb->get_results(
+//                    " SELECT * from " . $wpdb->posts . " WHERE post_type = 'post' AND post_status = 'publish' ORDER BY post_title DESC"
+//            );
+//        } else {
+//            $all_posts = $wpdb->get_results(
+//                    " SELECT *from " . $wpdb->posts . " WHERE post_type = 'post' AND post_status = 'publish' ORDER BY id desc"
+//            
+////mở đoạn code này ra thì sort được, chưa hiểu
+////                $all_posts = get_posts(array(
+////                "post_type" => "post",
+////                "post_status" => "publish"
+////            ));      
+//            );
+//        }
 
         $posts_array = array();
 
@@ -67,7 +94,7 @@ class OWTTableList extends WP_List_Table {
             foreach ($all_posts as $index => $post) {
                 $posts_array[] = array(
                     "id" => $post->ID,
-                    "title" => $post->post_title,
+                    "title" => $post->post_title, //trỏ đến những dữ liệu sẽ được hiển thị lên bảng
                     "content" => $post->post_content,
 //                    "slug"=>$post->post_name,
                     "post_date" => $post->post_date,
@@ -81,7 +108,7 @@ class OWTTableList extends WP_List_Table {
 
     public function get_hidden_columns() {
 
-        return array("post_status"); //tham số là cột cần ẩn
+        return array("id"); //tham số là cột cần ẩn
     }
 
     public function get_sortable_columns() {
@@ -99,6 +126,7 @@ class OWTTableList extends WP_List_Table {
     public function get_columns() {
 
         $columns = array(
+            //cột mặc định trong wr tham chiếu đến cột mình tự tạo
             "id" => "ID",
             "title" => "Tiêu Đề",
             "content" => "Nội Dung",
@@ -128,13 +156,13 @@ class OWTTableList extends WP_List_Table {
                 return "no value";
         }
     }
-    
+
     public function column_title($item) {
-        
+
         $action = array(
-            "edit"=>"<a href='?page=".$_GET['page']."&action=owt-edit&post_id=".$item['id']."'>Edit</a>",
+            "edit" => "<a href='?page=" . $_GET['page'] . "&action=owt-edit&post_id=" . $item['id'] . "'>Edit</a>",
 //            "edit"=>"<a href='?page="'>EIDT</a>"
-            "delete"=>"<a href='?page=".$_GET['page']."&action=owt-delete&post_id=".$item['id']."'>Delete</a>"
+            "delete" => "<a href='?page=" . $_GET['page'] . "&action=owt-delete&post_id=" . $item['id'] . "'>Delete</a>"
         );
         return sprintf('%1$s %2$s', $item['title'], $this->row_actions($action));
     }
