@@ -1,6 +1,5 @@
 <?php
 
-//tinhs nang sort chuwa duowc
 //searcho chuwa dc. ddeen phut thu 11
 require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 
@@ -122,11 +121,21 @@ class OWTTableList extends WP_List_Table {
         );
     }
 
+//bulk action
+    public function get_bulk_actions() {
+        $action = array(
+            "delete" => "Delete",
+            "edit" => "Edit"
+        );
+        return $action;
+    }
+
     //get column
     public function get_columns() {
 
         $columns = array(
             //cột mặc định trong wr tham chiếu đến cột mình tự tạo
+            "cb" => "<input type='checkbox'/>",
             "id" => "ID",
             "title" => "Tiêu Đề",
             "content" => "Nội Dung",
@@ -137,6 +146,10 @@ class OWTTableList extends WP_List_Table {
         );
 
         return $columns;
+    }
+
+    public function column_cb($item) {
+        return sprintf('<input type="checkbox" name="post[] value="%s"/>', $item['id']);
     }
 
     //get default

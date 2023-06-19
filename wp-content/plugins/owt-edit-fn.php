@@ -14,9 +14,9 @@
             ) );
     
     //delete
-//    $wpdb->delete($wpdb->posts, array (
-//       "id" => $post_id 
-//    ));
+    $wpdb->delete($wpdb->posts, array (
+       "id" => $post_id 
+    ));
 ?>
 <form>
     
@@ -30,10 +30,10 @@
         <textarea name="txt_content"><?php echo $post_detail->post_content; ?></textarea>
     </p>
     
-    <p>
+<!--    <p>
     <label>Post Slug</label>
     <input type="text" name="txt_slug" value="<?php echo $post_detail->post_name; ?>"/>
-    </p>
+    </p>-->
 
     <p>
         <button type="submit" name="btnsubmit"> Submit Details </button>
